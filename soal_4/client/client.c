@@ -56,7 +56,7 @@ int main() {
         }
 
         if (!hasKeyword) {
-            printf("Invalid Command\n");
+            printf("Server:\nInvalid Command\n\n");
             continue;
         }
 
@@ -82,6 +82,7 @@ int main() {
         printf("Server:\n%s\n", buffer);
     }
 
+    printf("Server:\nExiting the client\n");
     close(sock);
     return 0;
 }

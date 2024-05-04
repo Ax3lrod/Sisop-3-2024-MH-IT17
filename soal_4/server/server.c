@@ -347,6 +347,10 @@ int main() {
             if (read_size > 0) {
                 buffer[read_size] = '\0';  // Null-terminate the buffer
                 printf("Command received: %s\n", buffer);
+                if (strcmp(buffer, "exit") == 0) {
+                    printf("Received exit signal from client. Shutting down server...\n");
+                    break; // Keluar dari loop untuk menutup server
+                }
                 handleCommand(clientSocket, buffer);
             } else if (read_size == 0) {
                 printf("Client disconnected.\n");
@@ -358,6 +362,7 @@ int main() {
         }
 
         close(clientSocket);
+        break;  // Exit the outer loop to shut down the server
     }
 
     close(server_fd);
