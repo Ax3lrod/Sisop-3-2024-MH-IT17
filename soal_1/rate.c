@@ -54,6 +54,18 @@ int main() {
             filename = filename ? filename + 1 : ptr;
 
             snprintf(filepath, sizeof(filepath), "database/%s", filename);
+            file = fopen(filepath, "r");
+            
+            if (!file) { // If file not found in database/
+                snprintf(filepath, sizeof(filepath), "/home/ax3lrod/sisop/modul3/soal_1/new-data/%s", filename);
+                file = fopen(filepath, "r");
+            }
+
+            if (!file) {
+                fprintf(stderr, "Failed to open file: %s\n", filepath);
+                ptr += strlen(ptr) + 1;
+                continue;
+            }
 
             if (strstr(filename, ".csv")) {
                 if (strstr(filename, "trashcan")) {
@@ -62,13 +74,6 @@ int main() {
                     strcpy(type, "Parking Lot");
                 } else {
                     fprintf(stderr, "File type not recognized: %s\n", filename);
-                    ptr += strlen(ptr) + 1;
-                    continue;
-                }
-
-                file = fopen(filepath, "r");
-                if (!file) {
-                    perror("Failed to open file");
                     ptr += strlen(ptr) + 1;
                     continue;
                 }
