@@ -959,4 +959,7 @@ char* token = strtok(command, " ");
 10. Tes command "exit"
 ![image](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/150204139/8a9467f9-5a66-4b88-ad90-16e4d3aedb6f)
 
+11. Cek change.log
+![image](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/150204139/48829deb-0042-413d-84e6-aa677a241178)
+
 ## REVISI
