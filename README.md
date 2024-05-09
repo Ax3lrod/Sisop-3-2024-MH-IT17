@@ -589,6 +589,9 @@ int main(int argc, char *argv[]) {
 - Segmen Proses Anak, memproses output angka dari proses induk melalui `pipeInduk` dan mengonversikannya menjadi teks dengan fungsi `hitungOperasi`. Proses anak akan mencetak output text dengan format yang ditentukan, lalu mengirimkannya lagi ke proses induk melalui `pipeAnak`.
 - Segmen File Log, berada di dalam proses induk. Berguna untuk menuliskan hasil operasi ke dalam file histori.log. Caranya adalah dengan membuka file log dengan `fopen`. Kemudian `fprintf` untuk menuliskan output operasi dengan format yang ditetapkan, dengan contoh yaitu "[10/03/24 00:29:47] [KALI] tujuh kali enam sama dengan empat puluh dua.". Terakhir adalah menutup file log dengan `fclose`.
 
+### Output
+![Ubuntu 64-bit - VMware Workstation 09_05_2024 14_27_50](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151877527/15042892-2281-4f87-b257-91807c64d44d)
+
 ## NOMOR 4
 Lewis Hamilton 🏎 seorang wibu akut dan sering melewatkan beberapa episode yang karena sibuk menjadi asisten. Maka dari itu dia membuat list anime yang sedang ongoing (biar tidak lupa) dan yang completed (anime lama tapi pengen ditonton aja). Tapi setelah Lewis pikir-pikir malah kepikiran untuk membuat list anime. Jadi dia membuat file (harap diunduh) dan ingin menggunakan socket yang baru saja dipelajarinya untuk melakukan CRUD pada list animenya. 
 a. Client dan server terhubung melalui socket. 
