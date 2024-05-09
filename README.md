@@ -408,6 +408,186 @@ Ex:
 
 ## Solusi
 ### Deklarasi _Array_
+```
+char *satuanAngka[] = {"nol", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan"};
+char *belasanAngka[] = {"sepuluh", "sebelas", "dua belas", "tiga belas", "empat belas", "lima belas", "enam belas", "tujuh belas", "delapan belas", "sembilan belas"};
+```
+Array `satuanAngka` dan `belasanAngka` dideklarasi untuk menyimpan representasi teks dari angka yang diperlukan dalam proses konversi angka menjadi teks.
+
+### Fungsi Konversi
+```
+int konversiKeAngka(char *operan) {
+    if (strcmp(operan, "sepuluh") == 0) {
+        return 10;
+    } else if (strcmp(operan, "sebelas") == 0) {
+        return 11;
+    } else if (strncmp(operan, "dua", 3) == 0) {
+        if (strlen(operan) == 3) {
+            return 2;
+        } else if (strcmp(operan, "dua belas") == 0) {
+            return 12;
+        }
+    } else if (strncmp(operan, "tiga", 4) == 0) {
+        if (strlen(operan) == 4) {
+            return 3;
+        } else if (strcmp(operan, "tiga belas") == 0) {
+            return 13;
+        }
+    } else if (strncmp(operan, "empat", 5) == 0) {
+        if (strlen(operan) == 5) {
+            return 4;
+        } else if (strcmp(operan, "empat belas") == 0) {
+            return 14;
+        }
+    } else if (strncmp(operan, "lima", 4) == 0) {
+        if (strlen(operan) == 4) {
+            return 5;
+        } else if (strcmp(operan, "lima belas") == 0) {
+            return 15;
+        }
+    } else if (strncmp(operan, "enam", 4) == 0) {
+        if (strlen(operan) == 4) {
+            return 6;
+        } else if (strcmp(operan, "enam belas") == 0) {
+            return 16;
+        }
+    } else if (strncmp(operan, "tujuh", 5) == 0) {
+        if (strlen(operan) == 5) {
+            return 7;
+        } else if (strcmp(operan, "tujuh belas") == 0) {
+            return 17;
+        }
+    } else if (strncmp(operan, "delapan", 7) == 0) {
+        if (strlen(operan) == 7) {
+            return 8;
+        } else if (strcmp(operan, "delapan belas") == 0) {
+            return 18;
+        }
+    } else if (strncmp(operan, "sembilan", 8) == 0) {
+        if (strlen(operan) == 8) {
+            return 9;
+        } else if (strcmp(operan, "sembilan belas") == 0) {
+            return 19;
+        }
+    }
+
+    return 0;
+}
+```
+- Fungsi yang bertugas untuk mengonversi _string_ operan menjadi angka, logika yang digunakan adalah dengan menggunakan perbandingan _string_ dan manipulasi _string_ untuk mengonversi _string_ operan menjadi angka yang sesuai.
+
+### Fungsi Hitung
+```
+void hitungOperasi(char *operasi, char *operan1, char *operan2, char *hasilTeks, int *hasilAngka) {
+    int op1 = konversiKeAngka(operan1);
+    int op2 = konversiKeAngka(operan2);
+
+    if (strcmp(operasi, "-kali") == 0) {
+        *hasilAngka = op1 * op2;
+    } else if (strcmp(operasi, "-tambah") == 0) {
+        *hasilAngka = op1 + op2;
+    } else if (strcmp(operasi, "-kurang") == 0) {
+        *hasilAngka = op1 - op2;
+    } else if (strcmp(operasi, "-bagi") == 0) {
+        *hasilAngka = op1 / op2;
+    }
+
+    if (*hasilAngka < 0) {
+        strcpy(hasilTeks, "ERROR");
+    } else if (*hasilAngka < 10) {
+        strcpy(hasilTeks, satuanAngka[*hasilAngka]);
+    } else if (*hasilAngka < 20) {
+        strcpy(hasilTeks, belasanAngka[*hasilAngka - 10]);
+    } else if (*hasilAngka < 100) {
+        char puluhan[10], satuan[10];
+        int angkaPuluhan = *hasilAngka / 10;
+        int angkaSatuan = *hasilAngka % 10;
+        strcpy(puluhan, satuanAngka[angkaPuluhan]);
+        strcpy(satuan, satuanAngka[angkaSatuan]);
+        sprintf(hasilTeks, "%s puluh %s", puluhan, satuan);
+    } else {
+        strcpy(hasilTeks, "ERROR");
+    }
+}
+```
+- Memiliki fungsi vital untuk melakukan operasi matematika seperti penjumlahan, pengurangan, perkalian, atau pembagian. Logika fungsi `konversiKeAngka` akan mengonversi operan menjadi angka, lalu mengeksekusi operasi yang dikehendaki. Hasil angka tersebut disimpan dalam variabel `hasilAngka`, sedangkan untuk hasil teksnya disimpan dalam `hasilTeks` menggunakan array `satuanAngka` dan `belasanAngka` sebagai referensi untuk mengonversi angka menjadi teks.
+
+### Fungsi Utama
+```
+int main(int argc, char *argv[]) {
+    char *jenisOperasi = argv[1];
+    char operan1[100];
+    char operan2[100];
+    int pipeInduk[2];
+    int pipeAnak[2];
+    pid_t prosesAnak;
+
+    time_t waktuSekarang;
+    struct tm *infoWaktu;
+    time(&waktuSekarang);
+    infoWaktu = localtime(&waktuSekarang);
+// Segmen Penerapan Pipes dan Fork
+    pipe(pipeInduk);
+    pipe(pipeAnak);
+
+    scanf("%s", operan1);
+    scanf("%s", operan2);
+
+    prosesAnak = fork();
+// Segmen Proses Induk
+    if (prosesAnak > 0) {
+        close(pipeInduk[0]);
+        int hasilAngka;
+        char hasilTeks[100];
+
+        hitungOperasi(jenisOperasi, operan1, operan2, hasilTeks, &hasilAngka);
+        write(pipeInduk[1], &hasilAngka, sizeof(int));
+        close(pipeInduk[1]);
+
+        wait(NULL);
+
+        close(pipeAnak[1]);
+        read(pipeAnak[0], hasilTeks, sizeof(hasilTeks));
+// Segmen File Log
+        FILE *filelog;
+        filelog = fopen("histori.log", "a");
+
+        fprintf(filelog, "[%02d/%02d/%02d %02d:%02d:%02d] [%s] %s %s %s sama dengan %s.\n",
+                infoWaktu->tm_mday, infoWaktu->tm_mon + 1, infoWaktu->tm_year - 100,
+                infoWaktu->tm_hour, infoWaktu->tm_min, infoWaktu->tm_sec,
+                strcmp(jenisOperasi, "-kali") == 0 ? "KALI" : strcmp(jenisOperasi, "-tambah") == 0 ? "TAMBAH" : strcmp(jenisOperasi, "-kurang") == 0 ? "KURANG" : "BAGI",
+                operan1, strcmp(jenisOperasi, "-kali") == 0 ? "kali" : strcmp(jenisOperasi, "-tambah") == 0 ? "tambah" : strcmp(jenisOperasi, "-kurang") == 0 ? "kurang" : "bagi",
+                operan2, hasilTeks);
+
+        fclose(filelog);
+        close(pipeAnak[0]);
+    }
+// Segmen Proses Anak
+        else {
+        close(pipeInduk[1]);
+        int hasilAngka;
+        read(pipeInduk[0], &hasilAngka, sizeof(int));
+        char hasilTeks[100];
+        hitungOperasi(jenisOperasi, operan1, operan2, hasilTeks, &hasilAngka);
+        close(pipeInduk[0]);
+        close(pipeAnak[0]);
+
+        printf("hasil %s %s dan %s adalah %s.\n",
+               strcmp(jenisOperasi, "-kali") == 0 ? "perkalian" : strcmp(jenisOperasi, "-tambah") == 0 ? "penjumlahan" : strcmp(jenisOperasi, "-kurang") == 0 ? "pengurangan" : "pembagian",
+               operan1, operan2, hasilTeks);
+
+        write(pipeAnak[1], hasilTeks, sizeof(hasilTeks));
+        close(pipeAnak[1]);
+    }
+
+    return 0;
+}
+```
+- Fungsi Utama, secara garis beras berisi akumulasi logika yang mengeksekusi keseluruhan pproses. Berisi logika yang memroses _input user_, membuat proses anak dengan `fork`, melakukan komunikasi antar proses induk dan anak melalui `pipes`, eksekusi operasi matematika pada operan, konversi hasil menjadi teks, dan mencatat riwayat operasi ke dalam file log.
+- Segmen Penerapan Pipes dan Fork. Pipes `pipeInduk` dan `pipeAnak` dibuat untuk komunikasi dua arah, sedangkan fungsi `fork()` digunakan untuk membuat proses anak yang berjalan independen dari proses induk. Kode di dalam blok `if` dijalankan proses induk, sedangkan kode blok `else` dijalankan proses anak.
+- Segmen Proses Induk, bertugas untuk melakukan operasi matematika operan dengan memanggil fungsi `hitungOperasi`. Hasilnya akan dikirim ke proses anak melalui `pipeInduk` menggunakan `write`. Lalu proses induk akan menunggu proses anak selesai dengan `wait(NULL)`. Setelah proses anak selesai, proses induk menerima output text melalui `pipeAnak`. Terakhir adalah proses pencatatan riwayat hasil ke dalam file histori.log menggunakan format yang ditetapkan.
+- Segmen Proses Anak, memproses output angka dari proses induk melalui `pipeInduk` dan mengonversikannya menjadi teks dengan fungsi `hitungOperasi`. Proses anak akan mencetak output text dengan format yang ditentukan, lalu mengirimkannya lagi ke proses induk melalui `pipeAnak`.
+- Segmen File Log, berada di dalam proses induk. Berguna untuk menuliskan hasil operasi ke dalam file histori.log. Caranya adalah dengan membuka file log dengan `fopen`. Kemudian `fprintf` untuk menuliskan output operasi dengan format yang ditetapkan, dengan contoh yaitu "[10/03/24 00:29:47] [KALI] tujuh kali enam sama dengan empat puluh dua.". Terakhir adalah menutup file log dengan `fclose`.
 
 ## NOMOR 4
 Lewis Hamilton 🏎 seorang wibu akut dan sering melewatkan beberapa episode yang karena sibuk menjadi asisten. Maka dari itu dia membuat list anime yang sedang ongoing (biar tidak lupa) dan yang completed (anime lama tapi pengen ditonton aja). Tapi setelah Lewis pikir-pikir malah kepikiran untuk membuat list anime. Jadi dia membuat file (harap diunduh) dan ingin menggunakan socket yang baru saja dipelajarinya untuk melakukan CRUD pada list animenya. 
