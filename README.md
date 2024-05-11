@@ -827,12 +827,18 @@ Ini adalah program yang berjalan sebagai daemon di background dan bertindak seba
 race_log(const char *source, const char *command, const char *info): Fungsi ini digunakan untuk mencatat percakapan antara paddock.c dan driver.c ke dalam file race.log. Informasi yang dicatat meliputi sumber pesan (Driver atau Paddock), waktu percakapan, perintah atau fungsi yang dipanggil, dan informasi tambahan jika ada.
 
 Gap RPC, Fuel RPC, Tire RPC, TireChange RPC: Setiap fungsi RPC ini menerima permintaan dari driver.c dan memanggil fungsi yang sesuai dari actions.c. Setelah itu, hasilnya dikembalikan kepada driver.c dan percakapan dicatat menggunakan fungsi race_log.
+![Screenshot 2024-05-11 174231](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151889425/d011d28a-6483-46ab-a512-a9e370b75656)
 
 3. Pengguna memasukkan perintah melalui argumen command-line atau interaksi langsung dengan program.
 4. driver.c mengirimkan permintaan ke paddock.c melalui RPC.
 5. paddock.c menerima permintaan, menjalankan fungsi yang sesuai dari actions.c, dan mengembalikan hasil ke driver.c.
 6. driver.c menerima respons dari paddock.c melalui RPC dan menampilkannya kepada pengguna.
 7. Langkah 3-6 diulang sampai pengguna memutuskan untuk keluar dari program.
+
+### Output
+![Screenshot 2024-05-11 173924](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151889425/858fb2ee-3fec-4354-b1b2-957db97de8a1)
+![Screenshot 2024-05-11 174005](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151889425/a2f29c66-87a8-497d-ac24-38aad07434f8)
+![Screenshot 2024-05-11 173906](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151889425/3c55b710-83f5-49c5-9d16-e7bf0428abe9)
 
  
 ## NOMOR 4
