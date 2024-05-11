@@ -633,8 +633,189 @@ h. untuk mengaktifkan RPC call dari driver.c, bisa digunakan in-program CLI atau
     ├── actions.c
     ├── paddock.c
     └── race.log
+## Solusi
+### actions.c
+```
+#include <stdio.h>
+#include <string.h>
 
+char* Gap(float distance) {
+    if (distance < 3.5)
+        return "Gogogo";
+    else if (distance >= 3.5 && distance <= 10)
+        return "Push";
+    else
+        return "Stay out of trouble";
+}
 
+char* Fuel(int fuel) {
+    if (fuel > 80)
+        return "Push Push Push";
+    else if (fuel >= 50 && fuel <= 80)
+        return "You can go";
+    else
+        return "Conserve Fuel";
+}
+
+char* Tire(int tire) {
+    if (tire > 80)
+        return "Go Push Go Push";
+    else if (tire >= 50 && tire < 80)
+        return "Good Tire Wear";
+    else if (tire >= 30 && tire < 50)
+        return "Conserve Your Tire";
+    else
+        return "Box Box Box";
+}
+
+char* TireChange(char* currentTire) {
+    if (strcmp(currentTire, "Soft") == 0)
+        return "Mediums Ready";
+    else if (strcmp(currentTire, "Medium") == 0)
+        return "Box for Softs";
+    else
+        return "Invalid tire type";
+}
+
+```
+	Ini adalah file yang berisi implementasi dari fungsi-fungsi yang diperlukan untuk mengatur pengaturan mobil F1 sesuai dengan spesifikasi yang diberikan. Setiap fungsi dalam file ini menerima parameter yang sesuai dengan kebutuhan (misalnya, 	jarak, tingkat bensin, pemakaian ban) dan mengembalikan string yang merepresentasikan keputusan atau tindakan yang diambil berdasarkan nilai parameter tersebut.
+1. Pengguna menjalankan driver.c dengan memberikan argumen hostname atau alamat IP dari server tempat paddock.c berjalan.
+###  driver.c
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <rpc/rpc.h>
+#include "actions.h"
+
+#define PROGNUM 0x31341712
+#define VERSNUM 1
+
+CLIENT *cl;
+
+void call_and_print(const char *function_name, char *(*rpc_function)(CLIENT *, ...), void *arg) {
+    char *result;
+    result = rpc_function(cl, arg);
+    printf("[Paddock] [%s]: [%s]\n", function_name, result);
+    free(result);
+}
+
+int main(int argc, char *argv[]) {
+    char *server;
+    if (argc < 2) {
+        printf("Usage: %s server_host\n", argv[0]);
+        exit(1);
+    }
+    server = argv[1];
+
+    cl = clnt_create(server, PROGNUM, VERSNUM, "tcp");
+    if (cl == NULL) {
+        clnt_pcreateerror(server);
+        exit(1);
+    }
+
+    // Contoh penggunaan RPC untuk Gap
+    float distance = 7.2;
+    call_and_print("Gap", gap_rpc_1, &distance);
+
+    // Contoh penggunaan RPC untuk Fuel
+    int fuel = 65;
+    call_and_print("Fuel", fuel_rpc_1, &fuel);
+
+    // Contoh penggunaan RPC untuk Tire
+    int tire = 45;
+    call_and_print("Tire", tire_rpc_1, &tire);
+
+    // Contoh penggunaan RPC untuk Tire Change
+    char currentTire[] = "Soft";
+    call_and_print("Tire Change", tire_change_rpc_1, &currentTire);
+
+    clnt_destroy(cl);
+
+    return 0;
+}
+
+```
+	Ini adalah program yang bertindak sebagai antarmuka untuk pengguna. Pengguna dapat menggunakan program ini untuk berkomunikasi dengan paddock.c menggunakan RPC. Program ini akan membuat koneksi dengan paddock.c menggunakan protokol RPC, dan 	kemudian mengirimkan permintaan ke paddock.c sesuai dengan input yang diberikan oleh pengguna. Setiap respon yang diterima dari paddock.c akan ditampilkan kepada pengguna.
+2. driver.c membuat koneksi RPC dengan paddock.c.
+### paddock.c
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <rpc/rpc.h>
+#include "actions.h"
+
+#define PROGNUM 0x31341712
+#define VERSNUM 1
+#define GAP_PROC 1
+#define FUEL_PROC 2
+#define TIRE_PROC 3
+#define TIRE_CHANGE_PROC 4
+
+void race_log(const char *source, const char *command, const char *info) {
+    FILE *log_file = fopen("race.log", "a");
+    if (log_file != NULL) {
+        time_t current_time;
+        time(&current_time);
+        fprintf(log_file, "[%s] [%s]: [%s] [%s]\n", source, ctime(&current_time), command, info);
+        fclose(log_file);
+    }
+}
+
+char **gap_rpc_1_svc(float *distance, struct svc_req *rqstp) {
+    static char *result;
+    result = Gap(*distance);
+    race_log("Paddock", "Gap", result);
+    return (&result);
+}
+
+char **fuel_rpc_1_svc(int *fuel, struct svc_req *rqstp) {
+    static char *result;
+    result = Fuel(*fuel);
+    race_log("Paddock", "Fuel", result);
+    return (&result);
+}
+
+char **tire_rpc_1_svc(int *tire, struct svc_req *rqstp) {
+    static char *result;
+    result = Tire(*tire);
+    race_log("Paddock", "Tire", result);
+    return (&result);
+}
+
+char **tire_change_rpc_1_svc(char **currentTire, struct svc_req *rqstp) {
+    static char *result;
+    result = TireChange(*currentTire);
+    race_log("Paddock", "Tire Change", result);
+    return (&result);
+}
+
+int main() {
+    if (freopen("race.log", "a", stdout) == NULL) {
+        perror("freopen");
+        exit(1);
+    }
+
+    registerrpc(PROGNUM, VERSNUM, GAP_PROC, gap_rpc_1_svc, xdr_float, xdr_wrapstring);
+    registerrpc(PROGNUM, VERSNUM, FUEL_PROC, fuel_rpc_1_svc, xdr_int, xdr_wrapstring);
+    registerrpc(PROGNUM, VERSNUM, TIRE_PROC, tire_rpc_1_svc, xdr_int, xdr_wrapstring);
+    registerrpc(PROGNUM, VERSNUM, TIRE_CHANGE_PROC, tire_change_rpc_1_svc, xdr_wrapstring, xdr_wrapstring);
+
+    svc_run();
+
+    return 0;
+}
+```
+	Ini adalah program yang berjalan sebagai daemon di background dan bertindak sebagai server RPC untuk menerima permintaan dari driver.c. Program ini akan mendaftarkan fungsi-fungsi RPC yang sesuai dengan kebutuhan (misalnya, gap_rpc_1_svc, 		fuel_rpc_1_svc) yang kemudian akan dipanggil oleh driver.c. Setiap kali fungsi RPC dipanggil, paddock.c akan menjalankan fungsi yang sesuai dari actions.c dan mencatat percakapan ke dalam file race.log.
+3. Pengguna memasukkan perintah melalui argumen command-line atau interaksi langsung dengan program.
+4. driver.c mengirimkan permintaan ke paddock.c melalui RPC.
+5. paddock.c menerima permintaan, menjalankan fungsi yang sesuai dari actions.c, dan mengembalikan hasil ke driver.c.
+6. driver.c menerima respons dari paddock.c melalui RPC dan menampilkannya kepada pengguna.
+7. Langkah 3-6 diulang sampai pengguna memutuskan untuk keluar dari program.
+
+ 
 ## NOMOR 4
 Lewis Hamilton 🏎 seorang wibu akut dan sering melewatkan beberapa episode yang karena sibuk menjadi asisten. Maka dari itu dia membuat list anime yang sedang ongoing (biar tidak lupa) dan yang completed (anime lama tapi pengen ditonton aja). Tapi setelah Lewis pikir-pikir malah kepikiran untuk membuat list anime. Jadi dia membuat file (harap diunduh) dan ingin menggunakan socket yang baru saja dipelajarinya untuk melakukan CRUD pada list animenya. 
 a. Client dan server terhubung melalui socket. 
