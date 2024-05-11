@@ -836,9 +836,7 @@ Gap RPC, Fuel RPC, Tire RPC, TireChange RPC: Setiap fungsi RPC ini menerima perm
 7. Langkah 3-6 diulang sampai pengguna memutuskan untuk keluar dari program.
 
 ### Output
-![Screenshot 2024-05-11 173924](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151889425/858fb2ee-3fec-4354-b1b2-957db97de8a1)
-![Screenshot 2024-05-11 174005](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151889425/a2f29c66-87a8-497d-ac24-38aad07434f8)
-![Screenshot 2024-05-11 173906](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151889425/3c55b710-83f5-49c5-9d16-e7bf0428abe9)
+![Screenshot 2024-05-11 175516](https://github.com/Ax3lrod/Sisop-3-2024-MH-IT17/assets/151889425/223e9f6b-deca-4666-a05b-a806193cccef)
 
  
 ## NOMOR 4
