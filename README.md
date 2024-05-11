@@ -609,7 +609,7 @@ c. Pada paddock.c program berjalan secara daemon di background, bisa terhubung d
 d. Program paddock.c dapat call function yang berada di dalam actions.c.
 e. Program paddock.c tidak keluar/terminate saat terjadi error dan akan log semua percakapan antara paddock.c dan driver.c di dalam file race.log
 
-    Format log:
+Format log:
     [Source] [DD/MM/YY hh:mm:ss]: [Command] [Additional-info]
     ex :
     [Driver] [07/04/2024 08:34:50]: [Fuel] [55%]
@@ -625,7 +625,7 @@ h. untuk mengaktifkan RPC call dari driver.c, bisa digunakan in-program CLI atau
         Command: Fuel
     Info: 55%
 
-		Contoh direktori 😶‍🌫️:
+Contoh direktori 😶‍🌫️:
     .		.
     ├── client
     │   └── driver.c
@@ -678,7 +678,16 @@ char* TireChange(char* currentTire) {
 }
 
 ```
-	Ini adalah file yang berisi implementasi dari fungsi-fungsi yang diperlukan untuk mengatur pengaturan mobil F1 sesuai dengan spesifikasi yang diberikan. Setiap fungsi dalam file ini menerima parameter yang sesuai dengan kebutuhan (misalnya, 	jarak, tingkat bensin, pemakaian ban) dan mengembalikan string yang merepresentasikan keputusan atau tindakan yang diambil berdasarkan nilai parameter tersebut.
+Ini adalah file yang berisi implementasi dari fungsi-fungsi yang diperlukan untuk mengatur pengaturan mobil F1 sesuai dengan spesifikasi yang diberikan. Setiap fungsi dalam file ini menerima parameter yang sesuai dengan kebutuhan (misalnya, 	jarak, tingkat bensin, pemakaian ban) dan mengembalikan string yang merepresentasikan keputusan atau tindakan yang diambil berdasarkan nilai parameter tersebut.
+
+Gap(float distance): Fungsi ini menerima jarak antara mobil dengan mobil di depannya sebagai parameter. Berdasarkan jarak yang diterima, fungsi ini akan mengembalikan tindakan yang sesuai, seperti "Gogogo" jika jarak kurang dari 3.5 detik, "Push" jika jarak antara 3.5 dan 10 detik, dan "Stay out of trouble" jika jarak lebih dari 10 detik.
+
+Fuel(int fuel): Fungsi ini menerima tingkat bensin mobil sebagai parameter. Berdasarkan tingkat bensin yang diterima, fungsi ini akan mengembalikan tindakan yang sesuai, seperti "Push Push Push" jika bensin lebih dari 80%, "You can go" jika bensin di antara 50% dan 80%, dan "Conserve Fuel" jika bensin kurang dari 50%.
+
+Tire(int tire): Fungsi ini menerima tingkat pemakaian ban mobil sebagai parameter. Berdasarkan pemakaian ban yang diterima, fungsi ini akan mengembalikan tindakan yang sesuai, seperti "Go Push Go Push" jika pemakaian ban lebih dari 80%, "Good Tire Wear" jika pemakaian di antara 50 dan 80%, "Conserve Your Tire" jika pemakaian di antara 30 dan 50%, dan "Box Box Box" jika pemakaian kurang dari 30%.
+
+*TireChange(char currentTire)**: Fungsi ini menerima jenis ban yang sedang digunakan sebagai parameter. Berdasarkan jenis ban yang diterima, fungsi ini akan mengembalikan tindakan yang sesuai, seperti "Mediums Ready" jika ban saat ini adalah Soft, dan "Box for Softs" jika ban saat ini adalah Medium.
+
 1. Pengguna menjalankan driver.c dengan memberikan argumen hostname atau alamat IP dari server tempat paddock.c berjalan.
 ###  driver.c
 ```
@@ -736,7 +745,12 @@ int main(int argc, char *argv[]) {
 }
 
 ```
-	Ini adalah program yang bertindak sebagai antarmuka untuk pengguna. Pengguna dapat menggunakan program ini untuk berkomunikasi dengan paddock.c menggunakan RPC. Program ini akan membuat koneksi dengan paddock.c menggunakan protokol RPC, dan 	kemudian mengirimkan permintaan ke paddock.c sesuai dengan input yang diberikan oleh pengguna. Setiap respon yang diterima dari paddock.c akan ditampilkan kepada pengguna.
+Ini adalah program yang bertindak sebagai antarmuka untuk pengguna. Pengguna dapat menggunakan program ini untuk berkomunikasi dengan paddock.c menggunakan RPC. Program ini akan membuat koneksi dengan paddock.c menggunakan protokol RPC, dan 	kemudian mengirimkan permintaan ke paddock.c sesuai dengan input yang diberikan oleh pengguna. Setiap respon yang diterima dari paddock.c akan ditampilkan kepada pengguna.
+
+call_and_print(const char *function_name, char *(*rpc_function)(CLIENT *, ...), void *arg): Fungsi ini digunakan untuk memanggil fungsi RPC yang sesuai, menangani respons yang diterima, dan menampilkannya kepada pengguna. Fungsi ini menerima nama fungsi RPC, pointer ke fungsi RPC, dan argumen untuk fungsi RPC.
+
+Main function: Pada fungsi main, program ini membuat koneksi dengan paddock.c menggunakan protokol RPC. Kemudian, program ini memanggil fungsi RPC yang sesuai untuk setiap aksi yang ingin dilakukan (seperti memeriksa jarak, tingkat bensin, pemakaian ban, dll.). Setelah menerima respons dari paddock.c, program ini menampilkan respons tersebut kepada pengguna.
+
 2. driver.c membuat koneksi RPC dengan paddock.c.
 ### paddock.c
 ```
@@ -808,7 +822,12 @@ int main() {
     return 0;
 }
 ```
-	Ini adalah program yang berjalan sebagai daemon di background dan bertindak sebagai server RPC untuk menerima permintaan dari driver.c. Program ini akan mendaftarkan fungsi-fungsi RPC yang sesuai dengan kebutuhan (misalnya, gap_rpc_1_svc, 		fuel_rpc_1_svc) yang kemudian akan dipanggil oleh driver.c. Setiap kali fungsi RPC dipanggil, paddock.c akan menjalankan fungsi yang sesuai dari actions.c dan mencatat percakapan ke dalam file race.log.
+Ini adalah program yang berjalan sebagai daemon di background dan bertindak sebagai server RPC untuk menerima permintaan dari driver.c. Program ini akan mendaftarkan fungsi-fungsi RPC yang sesuai dengan kebutuhan (misalnya, gap_rpc_1_svc, 		fuel_rpc_1_svc) yang kemudian akan dipanggil oleh driver.c. Setiap kali fungsi RPC dipanggil, paddock.c akan menjalankan fungsi yang sesuai dari actions.c dan mencatat percakapan ke dalam file race.log.
+
+race_log(const char *source, const char *command, const char *info): Fungsi ini digunakan untuk mencatat percakapan antara paddock.c dan driver.c ke dalam file race.log. Informasi yang dicatat meliputi sumber pesan (Driver atau Paddock), waktu percakapan, perintah atau fungsi yang dipanggil, dan informasi tambahan jika ada.
+
+Gap RPC, Fuel RPC, Tire RPC, TireChange RPC: Setiap fungsi RPC ini menerima permintaan dari driver.c dan memanggil fungsi yang sesuai dari actions.c. Setelah itu, hasilnya dikembalikan kepada driver.c dan percakapan dicatat menggunakan fungsi race_log.
+
 3. Pengguna memasukkan perintah melalui argumen command-line atau interaksi langsung dengan program.
 4. driver.c mengirimkan permintaan ke paddock.c melalui RPC.
 5. paddock.c menerima permintaan, menjalankan fungsi yang sesuai dari actions.c, dan mengembalikan hasil ke driver.c.
